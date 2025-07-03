@@ -11,7 +11,7 @@ contract Voting {
         uint voteCount;
         bool approved;
     }
-
+x`
     // Data for the voters
     struct Voter {
         uint id;
@@ -189,9 +189,29 @@ contract Voting {
         return result;
     }
 
-    // Returns the list of approved voters
-    // iterates through the voters and counts the approved ones
-    // creates a dynamic array to hold the approved voters and returns it
+    function getVoters() public view returns (Voter[] memory) {
+        uint count = 0;
+        for (uint i = 0; i < pendingVoterAddresses.length; i++) {
+            address addr = pendingVoterAddresses[i];
+            if (voters[addr].approved) {
+                count++;
+            }
+        }
+
+        Voter[] memory result = new Voter[](count);
+        uint index = 0;
+        for (uint i = 0; i < pendingVoterAddresses.length; i++) {
+            address addr = pendingVoterAddresses[i];
+            if (voters[addr].approved) {
+                result[index++] = voters[addr];
+            }
+        }
+
+        return result;
+        
+    }
+
+    
     function getPendingCandidates() public view onlyOwner returns (Candidate[] memory) {
         uint count = 0;
         for (uint i = 0; i < pendingCandidateAddresses.length; i++) {
@@ -306,4 +326,12 @@ contract Voting {
             candidates[candidateRequests[candidateAddress]].approved
         );
     }
+
+    // Returns the list of pending candidate addresses
+    // this function is public and view, meaning it can be called externally and does not modify the state
+    // returns an array of addresses that have pending candidate requests
+    function getPendingVoterAddresses() public view returns (address[] memory) {
+    return pendingVoterAddresses;
+    }
+
 }
