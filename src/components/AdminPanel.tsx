@@ -62,19 +62,27 @@ const loadAllData = async () => {
       getPendingCandidates(contract),
       getPendingVoters(contract),
       contract.getCandidates(),
-      contract.getVoters(), // now returns all approved voters
+      contract.getVoters(),
     ]);
+
+    // Fetch revealed vote counts for each candidate
+    const revealedVoteCounts = await Promise.all(
+      approvedCands.map(async (cand) => {
+        const count = await contract.getRevealedVotes(cand.id);
+        return safeToNumber(count);
+      })
+    );
 
     setPendingCandidates(pendingCands);
     setPendingVoters(pendingVots);
 
     setApprovedCandidates(
-      approvedCands.map((cand) => ({
+      approvedCands.map((cand, idx) => ({
         id: safeToNumber(cand.id),
         name: cand.name,
         party: cand.party,
         wallet: cand.wallet,
-        voteCount: safeToNumber(cand.voteCount),
+        voteCount: revealedVoteCounts[idx], // Use revealed vote count
         approved: cand.approved,
       }))
     );
@@ -84,7 +92,8 @@ const loadAllData = async () => {
         id: safeToNumber(voter.id),
         name: voter.name,
         wallet: voter.wallet,
-        hasVoted: voter.hasVoted,
+        hasVoted: voter.hasVoted ?? false,
+        hasRevealed: voter.hasRevealed ?? false,
         approved: voter.approved,
       }))
     );
@@ -96,112 +105,115 @@ const loadAllData = async () => {
   }
 };
 
+const exportToExcel = async () => {
+  setExportLoading(true);
+  toast.loading('Preparing Excel export...', { id: 'export' });
 
-  const exportToExcel = async () => {
-    setExportLoading(true);
-    toast.loading('Preparing Excel export...', { id: 'export' });
+  try {
+    // Prepare candidate data
+    const candidateData = [
+      ...approvedCandidates.map(candidate => ({
+        'Type': 'Approved Candidate',
+        'ID': candidate.id,
+        'Name': candidate.name,
+        'Party': candidate.party || 'N/A',
+        'Wallet Address': candidate.wallet,
+        'Vote Count': candidate.voteCount, // Now correct
+        'Status': 'Approved',
+        'Has Voted': 'N/A',
+        'Has Revealed': 'N/A'
+      })),
+      ...pendingCandidates.map(candidate => ({
+        'Type': 'Pending Candidate',
+        'ID': candidate.id || 'Pending',
+        'Name': candidate.name,
+        'Party': candidate.party || 'N/A',
+        'Wallet Address': candidate.wallet,
+        'Vote Count': 0,
+        'Status': 'Pending Approval',
+        'Has Voted': 'N/A',
+        'Has Revealed': 'N/A'
+      }))
+    ];
 
-    try {
-      // Prepare candidate data
-      const candidateData = [
-        ...approvedCandidates.map(candidate => ({
-          'Type': 'Approved Candidate',
-          'ID': candidate.id,
-          'Name': candidate.name,
-          'Party': candidate.party || 'N/A',
-          'Wallet Address': candidate.wallet,
-          'Vote Count': candidate.voteCount || 0,
-          'Status': 'Approved',
-          'Has Voted': 'N/A'
-        })),
-        ...pendingCandidates.map(candidate => ({
-          'Type': 'Pending Candidate',
-          'ID': candidate.id || 'Pending',
-          'Name': candidate.name,
-          'Party': candidate.party || 'N/A',
-          'Wallet Address': candidate.wallet,
-          'Vote Count': 0,
-          'Status': 'Pending Approval',
-          'Has Voted': 'N/A'
-        }))
-      ];
+    // Prepare voter data
+    const voterData = [
+      ...approvedVoters.map(voter => ({
+        'Type': 'Approved Voter',
+        'ID': voter.id,
+        'Name': voter.name,
+        'Party': 'N/A',
+        'Wallet Address': voter.wallet,
+        'Vote Count': 'N/A',
+        'Status': 'Approved',
+        'Has Voted': voter.hasVoted ? 'Yes' : 'No',
+        'Has Revealed': voter.hasRevealed ? 'Yes' : 'No'
+      })),
+      ...pendingVoters.map(voter => ({
+        'Type': 'Pending Voter',
+        'ID': voter.id || 'Pending',
+        'Name': voter.name,
+        'Party': 'N/A',
+        'Wallet Address': voter.wallet,
+        'Vote Count': 'N/A',
+        'Status': 'Pending Approval',
+        'Has Voted': 'No',
+        'Has Revealed': 'No'
+      }))
+    ];
 
-      // Prepare voter data
-      const voterData = [
-        ...approvedVoters.map(voter => ({
-          'Type': 'Approved Voter',
-          'ID': voter.id,
-          'Name': voter.name,
-          'Party': 'N/A',
-          'Wallet Address': voter.wallet,
-          'Vote Count': 'N/A',
-          'Status': 'Approved',
-          'Has Voted': voter.hasVoted ? 'Yes' : 'No'
-        })),
-        ...pendingVoters.map(voter => ({
-          'Type': 'Pending Voter',
-          'ID': voter.id || 'Pending',
-          'Name': voter.name,
-          'Party': 'N/A',
-          'Wallet Address': voter.wallet,
-          'Vote Count': 'N/A',
-          'Status': 'Pending Approval',
-          'Has Voted': 'No'
-        }))
-      ];
+    // Combine all data
+    const allData = [...candidateData, ...voterData];
 
-      // Combine all data
-      const allData = [...candidateData, ...voterData];
+    // Create separate sheets for better organization
+    const candidateSheet = XLSX.utils.json_to_sheet(candidateData);
+    const voterSheet = XLSX.utils.json_to_sheet(voterData);
+    const combinedSheet = XLSX.utils.json_to_sheet(allData);
 
-      // Create separate sheets for better organization
-      const candidateSheet = XLSX.utils.json_to_sheet(candidateData);
-      const voterSheet = XLSX.utils.json_to_sheet(voterData);
-      const combinedSheet = XLSX.utils.json_to_sheet(allData);
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, combinedSheet, 'All Data');
+    XLSX.utils.book_append_sheet(workbook, candidateSheet, 'Candidates');
+    XLSX.utils.book_append_sheet(workbook, voterSheet, 'Voters');
 
-      // Create workbook
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, combinedSheet, 'All Data');
-      XLSX.utils.book_append_sheet(workbook, candidateSheet, 'Candidates');
-      XLSX.utils.book_append_sheet(workbook, voterSheet, 'Voters');
-
-      // Auto-size columns
-      const sheets = ['All Data', 'Candidates', 'Voters'];
-      sheets.forEach(sheetName => {
-        const sheet = workbook.Sheets[sheetName];
-        const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
-        const columnWidths = [];
-        
-        for (let col = range.s.c; col <= range.e.c; col++) {
-          let maxWidth = 10;
-          for (let row = range.s.r; row <= range.e.r; row++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-            const cell = sheet[cellAddress];
-            if (cell && cell.v) {
-              const cellLength = cell.v.toString().length;
-              maxWidth = Math.max(maxWidth, cellLength);
-            }
-          }
-          columnWidths.push({ wch: Math.min(maxWidth + 2, 50) });
-        }
-        
-        sheet['!cols'] = columnWidths;
-      });
-
-      // Generate filename with timestamp
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-      const filename = `voting-data-${timestamp}.xlsx`;
-
-      // Write and download file
-      XLSX.writeFile(workbook, filename);
-
-      toast.success(`Excel file exported successfully: ${filename}`, { id: 'export' });
+    // Auto-size columns
+    const sheets = ['All Data', 'Candidates', 'Voters'];
+    sheets.forEach(sheetName => {
+      const sheet = workbook.Sheets[sheetName];
+      const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+      const columnWidths = [];
       
-    } catch (error: any) {
-      console.error('Error exporting to Excel:', error);
-      toast.error('Failed to export to Excel', { id: 'export' });
-    } finally {
-      setExportLoading(false);
-    }
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        let maxWidth = 10;
+        for (let row = range.s.r; row <= range.e.r; row++) {
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+          const cell = sheet[cellAddress];
+          if (cell && cell.v) {
+            const cellLength = cell.v.toString().length;
+            maxWidth = Math.max(maxWidth, cellLength);
+          }
+        }
+        columnWidths.push({ wch: Math.min(maxWidth + 2, 50) });
+      }
+      
+      sheet['!cols'] = columnWidths;
+    });
+
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const filename = `voting-data-${timestamp}.xlsx`;
+
+    // Write and download file
+    XLSX.writeFile(workbook, filename);
+
+    toast.success(`Excel file exported successfully: ${filename}`, { id: 'export' });
+    
+  } catch (error: any) {
+    console.error('Error exporting to Excel:', error);
+    toast.error('Failed to export to Excel', { id: 'export' });
+  } finally {
+    setExportLoading(false);
+  }
   };
 
   const approveCandidate = async (candidateAddress: string, candidateName: string) => {

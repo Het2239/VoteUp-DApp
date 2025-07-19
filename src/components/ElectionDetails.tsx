@@ -19,7 +19,7 @@ const ElectionDetails: React.FC = () => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const { provider, signer, account, isConnected } = useWeb3();
-  
+
   const [election, setElection] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,7 @@ const ElectionDetails: React.FC = () => {
     voterApproved: false,
     hasVoted: false
   });
-  
+
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [applyType, setApplyType] = useState<'candidate' | 'voter'>('voter');
   const [activeTab, setActiveTab] = useState<'overview' | 'candidates' | 'vote' | 'results' | 'admin'>('overview');
@@ -51,16 +51,16 @@ const ElectionDetails: React.FC = () => {
 
   const loadElectionData = async () => {
     if (!contractAddress || !provider) return;
-    
+
     try {
       setLoading(true);
-      const contract = getVotingContract(contractAddress, provider, signer);
-      
+      const contract = getVotingContract(contractAddress, provider, signer!);
+
       // Get election info
       const electionInfo = await getElectionInfo(contract);
       const owner = await contract.owner();
       const candidatesList = await getCandidates(contract);
-      
+
       setElection({
         ...electionInfo,
         contractAddress,
@@ -92,6 +92,13 @@ const ElectionDetails: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const isRevealPhase = () => {
+    if (!election) return false;
+    const now = Date.now() / 1000;
+    return election.endTime <= now && now <= election.endTime + 86400; // 24h after end
+  };
+
 
   const getElectionStatus = () => {
     if (!election) return 'unknown';
@@ -127,9 +134,8 @@ const ElectionDetails: React.FC = () => {
   if (!election) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className={`text-center p-8 rounded-2xl ${
-          isDark ? 'bg-gray-800/50 border border-gray-700' : 'bg-white/50 border border-gray-200'
-        }`}>
+        <div className={`text-center p-8 rounded-2xl ${isDark ? 'bg-gray-800/50 border border-gray-700' : 'bg-white/50 border border-gray-200'
+          }`}>
           <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Election Not Found
           </h2>
@@ -141,7 +147,9 @@ const ElectionDetails: React.FC = () => {
     );
   }
 
-  const status = getElectionStatus();
+const status = getElectionStatus();
+  const revealPhaseActive = election && Date.now() / 1000 > election.endTime && Date.now() / 1000 <= election.endTime + 86400;
+
   const canVote = status === 'active' && userStatus.voterApproved && !userStatus.hasVoted;
 
   return (
@@ -150,11 +158,10 @@ const ElectionDetails: React.FC = () => {
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-            isDark 
-              ? 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-300' 
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${isDark
+              ? 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-300'
               : 'bg-white/50 hover:bg-gray-100/50 text-gray-700'
-          }`}
+            }`}
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
@@ -165,61 +172,63 @@ const ElectionDetails: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`p-6 rounded-2xl backdrop-blur-sm border ${
-          isDark 
-            ? 'bg-gray-800/50 border-gray-700' 
+        className={`p-6 rounded-2xl backdrop-blur-sm border ${isDark
+            ? 'bg-gray-800/50 border-gray-700'
             : 'bg-white/50 border-gray-200'
-        }`}
+          }`}
       >
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex-1">
-            <h1 className={`text-3xl font-bold mb-2 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}>
+            <h1 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'
+              }`}>
               {election.name}
             </h1>
-            <p className={`text-lg mb-4 ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>
+            <p className={`text-lg mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'
+              }`}>
               {election.description}
             </p>
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <Calendar className={`w-4 h-4 ${
-                  isDark ? 'text-gray-400' : 'text-gray-500'
-                }`} />
+                <Calendar className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'
+                  }`} />
                 <span className={isDark ? 'text-gray-300' : 'text-gray-700'}>
                   {new Date(election.startTime * 1000).toLocaleDateString()}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className={`w-4 h-4 ${
-                  isDark ? 'text-gray-400' : 'text-gray-500'
-                }`} />
+                <Users className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'
+                  }`} />
                 <span className={isDark ? 'text-gray-300' : 'text-gray-700'}>
                   {candidates.length} Candidates
                 </span>
               </div>
             </div>
           </div>
-          
+
           <div className="flex flex-col items-end gap-4">
-            <div className={`px-4 py-2 rounded-full text-sm font-medium ${
-              status === 'active' 
-                ? 'bg-green-100 text-green-800' 
+            <div className={`px-4 py-2 rounded-full text-sm font-medium ${status === 'active'
+                ? 'bg-green-100 text-green-800'
                 : status === 'upcoming'
-                ? 'bg-yellow-100 text-yellow-800'
-                : 'bg-red-100 text-red-800'
-            }`}>
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-red-100 text-red-800'
+              }`}>
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </div>
-            
+
             {status !== 'ended' && (
               <CountdownTimer
                 targetTime={status === 'upcoming' ? election.startTime : election.endTime}
                 label={status === 'upcoming' ? 'Starts in' : 'Ends in'}
               />
             )}
+            {status === 'ended' && revealPhaseActive && (
+              <CountdownTimer
+                targetTime={election.endTime + 86400}
+                label="Reveal ends in"
+                phase="Reveal Phase"
+              />
+            )}
+
           </div>
         </div>
       </motion.div>
@@ -230,17 +239,15 @@ const ElectionDetails: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`p-4 rounded-xl ${
-            isDark 
-              ? 'bg-gray-800/50 border border-gray-700' 
+          className={`p-4 rounded-xl ${isDark
+              ? 'bg-gray-800/50 border border-gray-700'
               : 'bg-white/50 border border-gray-200'
-          }`}
+            }`}
         >
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className={`text-sm font-medium ${
-                isDark ? 'text-gray-300' : 'text-gray-700'
-              }`}>
+              <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                 Your Status:
               </span>
               {userStatus.isOwner && (
@@ -284,7 +291,7 @@ const ElectionDetails: React.FC = () => {
                   </button>
                 </>
               )}
-              
+
               {canVote && (
                 <button
                   onClick={() => setActiveTab('vote')}
@@ -312,15 +319,14 @@ const ElectionDetails: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === tab.id
-                  ? isDark 
-                    ? 'border-purple-400 text-purple-400' 
+              className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
+                  ? isDark
+                    ? 'border-purple-400 text-purple-400'
                     : 'border-purple-600 text-purple-600'
-                  : isDark 
-                    ? 'border-transparent text-gray-400 hover:text-gray-300' 
+                  : isDark
+                    ? 'border-transparent text-gray-400 hover:text-gray-300'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
@@ -337,14 +343,12 @@ const ElectionDetails: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
-            <div className={`p-6 rounded-xl ${
-              isDark 
-                ? 'bg-gray-800/50 border border-gray-700' 
+            <div className={`p-6 rounded-xl ${isDark
+                ? 'bg-gray-800/50 border border-gray-700'
                 : 'bg-white/50 border border-gray-200'
-            }`}>
-              <h3 className={`text-lg font-semibold mb-4 ${
-                isDark ? 'text-white' : 'text-gray-900'
               }`}>
+              <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'
+                }`}>
                 Election Timeline
               </h3>
               <div className="space-y-3">
@@ -367,14 +371,12 @@ const ElectionDetails: React.FC = () => {
               </div>
             </div>
 
-            <div className={`p-6 rounded-xl ${
-              isDark 
-                ? 'bg-gray-800/50 border border-gray-700' 
+            <div className={`p-6 rounded-xl ${isDark
+                ? 'bg-gray-800/50 border border-gray-700'
                 : 'bg-white/50 border border-gray-200'
-            }`}>
-              <h3 className={`text-lg font-semibold mb-4 ${
-                isDark ? 'text-white' : 'text-gray-900'
               }`}>
+              <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'
+                }`}>
                 Contract Info
               </h3>
               <div className="space-y-2">
@@ -390,15 +392,15 @@ const ElectionDetails: React.FC = () => {
         )}
 
         {activeTab === 'candidates' && (
-          <CandidateList 
-            candidates={candidates} 
+          <CandidateList
+            candidates={candidates}
             contractAddress={contractAddress!}
             onDataChange={loadElectionData}
           />
         )}
 
         {activeTab === 'vote' && canVote && (
-          <VotingInterface 
+          <VotingInterface
             candidates={candidates}
             contractAddress={contractAddress!}
             onVoteSubmitted={loadElectionData}
@@ -410,7 +412,7 @@ const ElectionDetails: React.FC = () => {
         )}
 
         {activeTab === 'admin' && userStatus.isOwner && (
-          <AdminPanel 
+          <AdminPanel
             contractAddress={contractAddress!}
             onDataChange={loadElectionData}
           />

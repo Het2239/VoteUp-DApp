@@ -192,7 +192,7 @@ export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
   useEffect(() => {
     const autoConnect = async () => {
       if (typeof window.ethereum !== 'undefined') {
-        try {Notifications
+        try {toast.loading('Attempting auto-connect...');
           const accounts = await window.ethereum.request({ method: 'eth_accounts' });
           if (accounts.length > 0) {
             await connectWallet();
