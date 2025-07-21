@@ -409,20 +409,7 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
                 {showVerification ? 'Hide' : 'Verify Vote'}
               </button>
             </div>
-            {/* {isOwner && !revealStarted && votingEndTime !== null && currentTime >= votingEndTime && (
-              
-              <div className="text-center">
-                <button
-                  onClick={handleManualRevealStart}
-                  className="mt-4 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
-                >
-                  🚀 Start Reveal Phase
-                </button>
-                <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  The voting period has ended. Start the reveal phase so voters can reveal their committed votes.
-                </p>
-              </div>
-            )} */}
+            
             
 
 
@@ -544,10 +531,12 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
                   <button
                     onClick={handleRevealVote}
                     disabled={
-                      revealing ||
-                      !verificationData.candidateId ||
-                      !verificationData.secret ||
-                      isInRevealPeriod
+                      !!(
+                        revealing ||
+                        !verificationData.candidateId ||
+                        !verificationData.secret ||
+                        !isInRevealPeriod
+                      )
                     } 
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-semibold hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                   >
