@@ -45,6 +45,16 @@ VoteUp is a decentralized voting platform built on the Ethereum blockchain that 
 
 ## 🧠 Tech Stack
 
+![React](https://img.shields.io/badge/Frontend-React-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?logo=typescript)
+![Vite](https://img.shields.io/badge/Bundler-Vite-purple?logo=vite)
+![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS-38bdf8?logo=tailwindcss)
+![Framer Motion](https://img.shields.io/badge/Animations-Framer_Motion-ff69b4?logo=framer)
+![Solidity](https://img.shields.io/badge/Smart_Contract-Solidity-black?logo=solidity)
+![Ethers.js](https://img.shields.io/badge/Web3-Ethers.js-yellow?logo=ethereum)
+![MetaMask](https://img.shields.io/badge/Wallet-MetaMask-orange?logo=metamask)
+![Foundry](https://img.shields.io/badge/Testing-Foundry-blueviolet?logo=foundry)
+
 | Layer          | Tools / Frameworks                                                            |
 | -------------- | ----------------------------------------------------------------------------- |
 | **Frontend**   | React 18, TypeScript, Vite, Tailwind CSS, Framer Motion, React Router DOM     |
@@ -241,11 +251,11 @@ VoteUp delivers a secure, decentralized, and verifiable voting experience throug
 
 | Property     | Strength |
 | ------------ | -------- |
-| Security     | 🌟🌟🌟🌟     |
-| Efficiency   | 🌟🌟🌟    |
-| Reliability  | 🌟🌟🌟🌟     |
-| Privacy      | 🌟🌟🌟🌟     |
-| Transparency | 🌟🌟🌟🌟     |
+| Security     | ✅✅✅✅     |
+| Efficiency   | ✅✅✅      |
+| Reliability  | ✅✅✅✅     |
+| Privacy      | ✅✅✅✅     |
+| Transparency | ✅✅✅✅     |
 
 It’s ideal for:
 
