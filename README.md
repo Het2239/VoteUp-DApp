@@ -6,10 +6,10 @@ VoteUp is a decentralized voting platform built on the Ethereum blockchain that 
 
 ## 📌 Table of Contents
 
-* [Features](#features)
-* [Tech Stack](#tech-stack)
-* [Architecture](#architecture)
-* [Smart Contract Overview](#smart-contract-overview)
+* [Features](#-features)
+* [Tech Stack](#-tech-stack)
+* [Architecture](#-architecture)
+* [Smart Contract Overview](#-smart-contract-overview)
 * [Installation and Running Locally](#installation-and-running-locally)
 * [Usage Flow](#usage-flow)
 * [Commit-Reveal Voting Explained](#commit-reveal-voting-explained)
@@ -17,7 +17,7 @@ VoteUp is a decentralized voting platform built on the Ethereum blockchain that 
 * [File Structure](#file-structure)
 * [Contributing](#contributing)
 * [License](#license)
-* [Contact](#contact)
+* [Contact](#-contact)
 
 ---
 
@@ -45,15 +45,21 @@ VoteUp is a decentralized voting platform built on the Ethereum blockchain that 
 
 ## 🧠 Tech Stack
 
-![React](https://img.shields.io/badge/Frontend-React-blue?logo=react)
-![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?logo=typescript)
-![Vite](https://img.shields.io/badge/Bundler-Vite-purple?logo=vite)
-![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind_CSS-38bdf8?logo=tailwindcss)
-![Framer Motion](https://img.shields.io/badge/Animations-Framer_Motion-ff69b4?logo=framer)
-![Solidity](https://img.shields.io/badge/Smart_Contract-Solidity-black?logo=solidity)
-![Ethers.js](https://img.shields.io/badge/Web3-Ethers.js-yellow?logo=ethereum)
-![MetaMask](https://img.shields.io/badge/Wallet-MetaMask-orange?logo=metamask)
-![Foundry](https://img.shields.io/badge/Testing-Foundry-blueviolet?logo=foundry)
+![React](https://img.shields.io/badge/React-61DAFB.svg?style=for-the-badge&logo=React&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6.svg?style=for-the-badge&logo=TypeScript&logoColor=white)
+![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF.svg?style=for-the-badge&logo=Vite&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000.svg?style=for-the-badge&logo=Vercel&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4.svg?style=for-the-badge&logo=Tailwind-CSS&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer-0055FF.svg?style=for-the-badge&logo=Framer&logoColor=white)
+![Solidity](https://img.shields.io/badge/Solidity-363636.svg?style=for-the-badge&logo=Solidity&logoColor=white)
+![Ethereum](https://img.shields.io/badge/Ethereum-3C3C3D.svg?style=for-the-badge&logo=Ethereum&logoColor=white)
+![Ethers.js](https://img.shields.io/badge/Ethers-2535A0.svg?style=for-the-badge&logo=Ethers&logoColor=white)
+![Web3.js](https://img.shields.io/badge/web3.js-F16822?style=for-the-badge&logo=web3.js&logoColor=white)
+![MetaMask](https://img.shields.io/badge/MetaMask-F6851B.svg?style=for-the-badge&logo=metamask&logoColor=white)
+![Foundry](https://img.shields.io/badge/Foundry-FF4A4A.svg?style=for-the-badge&logo=wrench&logoColor=white)
+
+
 
 | Layer          | Tools / Frameworks                                                            |
 | -------------- | ----------------------------------------------------------------------------- |
