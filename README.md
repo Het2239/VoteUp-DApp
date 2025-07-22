@@ -1,8 +1,9 @@
-# 🗳️ VoteUp – Decentralized Verifiable Voting DApp
+# 🗳️ VoteUp – Decentralized E2E Verifiable Voting DApp
 
 VoteUp is a decentralized voting platform built on the Ethereum blockchain that supports **end-to-end verifiable elections**. It ensures transparency, integrity, and **voter privacy** through a commit-reveal voting scheme. The system supports role-based permissions (admin, voters, candidates), on-chain result validation, and real-time frontend interactions — all in a trustless, decentralized environment.
 
 ---
+
 
 ## 📌 Table of Contents
 
