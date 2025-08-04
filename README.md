@@ -3,6 +3,16 @@
 VoteUp is a decentralized voting platform built on the Ethereum blockchain that supports **end-to-end verifiable elections**. It ensures transparency, integrity, and **voter privacy** through a commit-reveal voting scheme. The system supports role-based permissions (admin, voters, candidates), on-chain result validation, and real-time frontend interactions — all in a trustless, decentralized environment.
 
 ---
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Built with Solidity](https://img.shields.io/badge/SmartContract-Solidity-blue.svg)](https://soliditylang.org)
+
+## 🎥 Demo Video
+
+Watch the full demo on YouTube: [![Watch the video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=4T_IIv7bveM)
+
+> Click the thumbnail above or [watch it here](https://www.youtube.com/watch?v=4T_IIv7bveM)
+
+---
 
 
 ## 📌 Table of Contents
