@@ -232,7 +232,7 @@ contract Voting {
 
     // Reveal vote with original (candidateId, secret)
     // this function allows a registered and approved voter to reveal their vote with the original candidate ID and secret.
-    function revealVote(uint candidateId, uint secret) public {
+    function revealVote(uint candidateId, uint secret) public revealPhaseOpen {
         require(isRegisteredVoter[msg.sender], "Not registered");
         require(voters[msg.sender].approved, "Not approved");
         require(!voters[msg.sender].hasRevealed, "Already revealed");
