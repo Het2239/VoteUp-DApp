@@ -220,16 +220,6 @@ contract Voting {
         emit VoteCommitted(msg.sender);
     }
 
-    // This function starts the reveal phase of the election.
-    // It can only be called after the voting period has ended.
-    // Once started, voters can reveal their votes.
-    // function startRevealPhase() public votingClosed {
-    //     require(!revealPhaseStarted, "Reveal phase already started");
-
-    //     revealPhaseStarted = true;
-    //     revealDeadline = block.timestamp + 24 hours;
-    // }
-
     // Reveal vote with original (candidateId, secret)
     // this function allows a registered and approved voter to reveal their vote with the original candidate ID and secret.
     function revealVote(uint candidateId, uint secret) public revealPhaseOpen {

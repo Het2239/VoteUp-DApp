@@ -27,6 +27,11 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
   const [currentTime, setCurrentTime] = useState(Math.floor(Date.now() / 1000));
 
 
+  // --- helper -------------------------------------------------
+  const toArray = (v: any): string[] =>
+    Array.isArray(v) ? v : v ? [v] : [];
+  // ------------------------------------------------------------
+
 
   const [showVerification, setShowVerification] = useState(false);
   const [verificationData, setVerificationData] = useState<{
@@ -40,6 +45,7 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
     commitment: '',
     isValid: null
   });
+
   const [showSecret, setShowSecret] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [voterStatus, setVoterStatus] = useState<{
@@ -71,8 +77,23 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
         const sorted = [...revealedVotes].sort((a, b) => b.voteCount - a.voteCount);
         setSortedCandidates(sorted);
 
-        const { winnerName, maxVotes } = await getResults(contract);
-        setResults({ winnerName, maxVotes, allCandidates: revealedVotes });
+
+        const maxVotes = sorted[0]?.voteCount ?? 0;
+        const winnersArr = sorted
+          .filter(c => Number(c.voteCount) === Number(maxVotes))
+          .map(c => c.name);
+
+        // guarantee the UI always receives an array
+        setResults({
+          winnerName: winnersArr,   // always array now
+          maxVotes,
+          allCandidates: revealedVotes
+        });
+
+
+
+
+
 
 
       } catch (err) {
@@ -118,13 +139,13 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
       setResults(resultsData);
 
       if (resultsData.winnerName && resultsData.winnerName.length > 0) {
-  confetti({
-    particleCount: 200,
-    spread: 70,
-    origin: { y: 0.6 },
-    colors: ['#8B5CF6', '#06B6D4', '#10B981']
-  });
-}
+        confetti({
+          particleCount: 200,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#8B5CF6', '#06B6D4', '#10B981']
+        });
+      }
 
     } catch (error) {
       console.error('Error loading results:', error);
@@ -171,18 +192,18 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
       console.error('Error loading voter status:', error);
     }
   };
-//   const debugElectionPhase = async () => {
-//   const contract = getVotingContract(contractAddress, provider!, signer!);
-//   const election = await contract.getElectionInfo();
-//   const now = Math.floor(Date.now() / 1000);
+  //   const debugElectionPhase = async () => {
+  //   const contract = getVotingContract(contractAddress, provider!, signer!);
+  //   const election = await contract.getElectionInfo();
+  //   const now = Math.floor(Date.now() / 1000);
 
-//   console.log("🕒 Current Time:", now);
-//   console.log("🗳️ Start Time:", Number(election.startTime));
-//   console.log("🛑 End Time:", Number(election.endTime));
-//   console.log("🪪 Active:", election.active);
-//   console.log("📢 Reveal window ends at:", Number(election.endTime) + 86400);
-// };
-// debugElectionPhase();
+  //   console.log("🕒 Current Time:", now);
+  //   console.log("🗳️ Start Time:", Number(election.startTime));
+  //   console.log("🛑 End Time:", Number(election.endTime));
+  //   console.log("🪪 Active:", election.active);
+  //   console.log("📢 Reveal window ends at:", Number(election.endTime) + 86400);
+  // };
+  // debugElectionPhase();
 
 
   const handleManualRevealStart = async () => {
@@ -320,65 +341,52 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
 
   // const totalVotes = results.allCandidates.reduce((sum: number, candidate: any) => sum + candidate.voteCount, 0);
   // const sortedCandidates = [...results.allCandidates].sort((a, b) => b.voteCount - a.voteCount);
-
+  const winners = toArray(results.winnerName);
   return (
     <div className="space-y-6">
-  {/* Winner Announcement */}
-  {results.winnerName && results.winnerName.length > 0 && (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`text-center p-8 rounded-2xl ${
-        isDark
-          ? 'bg-gradient-to-r from-purple-900/50 to-cyan-900/50 border border-purple-600'
-          : 'bg-gradient-to-r from-purple-100 to-cyan-100 border border-purple-300'
-      }`}
-    >
-      <motion.div
-        initial={{ y: -20 }}
-        animate={{ y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mb-4"
-      >
-        <Crown
-          className={`w-16 h-16 mx-auto ${
-            isDark ? 'text-yellow-400' : 'text-yellow-500'
-          }`}
-        />
-      </motion.div>
-      <h2
-        className={`text-3xl font-bold mb-2 ${
-          isDark ? 'text-white' : 'text-gray-900'
-        }`}
-      >
-        🎉
-        {Array.isArray(results.winnerName) && results.winnerName.length > 1
-          ? "It's a Tie!"
-          : 'Winner Announced!'}{' '}
-        🎉
-      </h2>
-      <p
-        className={`text-xl mb-4 ${
-          isDark ? 'text-purple-300' : 'text-purple-700'
-        }`}
-      >
-        {Array.isArray(results.winnerName)
-          ? results.winnerName.join(', ')
-          : results.winnerName}
-      </p>
-      <p
-        className={`text-lg ${
-          isDark ? 'text-gray-300' : 'text-gray-700'
-        }`}
-      >
-        With {results.maxVotes} votes (
-        {totalVotes > 0
-          ? Math.round((results.maxVotes / totalVotes) * 100)
-          : 0}
-        % of total votes)
-      </p>
-    </motion.div>
-  )}
+      {/* Winner Announcement */}
+      {results.winnerName && results.winnerName.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className={`text-center p-8 rounded-2xl ${isDark
+            ? 'bg-gradient-to-r from-purple-900/50 to-cyan-900/50 border border-purple-600'
+            : 'bg-gradient-to-r from-purple-100 to-cyan-100 border border-purple-300'
+            }`}
+        >
+          <motion.div
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-4"
+          >
+            <Crown
+              className={`w-16 h-16 mx-auto ${isDark ? 'text-yellow-400' : 'text-yellow-500'
+                }`}
+            />
+          </motion.div>
+          <h2 className="text-3xl font-bold mb-2">
+
+            🎉 {winners.length > 1 ? "It's a Tie!" : 'Winner Announced!'} 🎉
+          </h2>
+
+          <p className="text-xl mb-4">
+            {winners.join(', ')}
+          </p>
+
+
+          <p
+            className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'
+              }`}
+          >
+            With {results.maxVotes} votes (
+            {totalVotes > 0
+              ? Math.round((results.maxVotes / totalVotes) * 100)
+              : 0}
+            % of total votes)
+          </p>
+        </motion.div>
+      )}
 
 
       {/* E2E Verification Section - Only show for registered voters */}
@@ -409,8 +417,8 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
                 {showVerification ? 'Hide' : 'Verify Vote'}
               </button>
             </div>
-            
-            
+
+
 
 
 
@@ -535,9 +543,9 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
                         revealing ||
                         !verificationData.candidateId ||
                         !verificationData.secret ||
-                        !isInRevealPeriod
+                        isInRevealPeriod
                       )
-                    } 
+                    }
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-semibold hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Eye className="w-5 h-5" />
@@ -607,7 +615,7 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
       )}
 
       {/* Results Table */}
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -627,7 +635,7 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
           <div className="space-y-4">
             {sortedCandidates.map((candidate, index) => {
               const percentage = totalVotes > 0 ? (Number(candidate.voteCount) / totalVotes) * 100 : 0;
-              const isWinner = Array.isArray(results.winnerName)
+              const isWinner = winners.includes(candidate.name)
                 ? results.winnerName.includes(candidate.name)
                 : results.winnerName === candidate.name;
 
@@ -673,20 +681,20 @@ const ElectionResults: React.FC<ElectionResultsProps> = ({ contractAddress }) =>
                         </p>
                       </div>
                     </div>
-                    {isOwner  && (
-              
-              <div className="text-center">
-                <button
-                  onClick={handleManualRevealStart}
-                  className="mt-4 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
-                >
-                  🚀 Start Reveal Phase
-                </button>
-                <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  The voting period has ended. Start the reveal phase so voters can reveal their committed votes.
-                </p>
-              </div>
-            )}
+                    {isOwner && (
+
+                      <div className="text-center">
+                        <button
+                          onClick={handleManualRevealStart}
+                          className="mt-4 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+                        >
+                          🚀 Start Reveal Phase
+                        </button>
+                        <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          The voting period has ended. Start the reveal phase so voters can reveal their committed votes.
+                        </p>
+                      </div>
+                    )}
                     <div className="text-right">
                       <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'
                         }`}>

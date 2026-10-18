@@ -19,7 +19,7 @@ const CreateElectionModal: React.FC<CreateElectionModalProps> = ({
   onElectionCreated
 }) => {
   const { isDark } = useTheme();
-  const { signer, account } = useWeb3();
+  const { signer, account, chainId } = useWeb3();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -81,7 +81,9 @@ const CreateElectionModal: React.FC<CreateElectionModalProps> = ({
         startTime,
         endTime,
         createdAt: Date.now() / 1000,
-        active: true
+        active: true,
+        chainId: chainId ?? 11155111,          // default to Sepolia if somehow null
+        revealDeadline: endTime + 86400,        // reveal window: 24 hours after voting ends
       };
 
       const id = await electionService.addElection(election);

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Filter, Clock, Users, Trophy, Calendar } from 'lucide-react';
+import { Plus, Search, Filter, Clock, Users, Trophy, Calendar, Network } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
-import { useWeb3 } from '../contexts/Web3Context';
+import { useWeb3, getNetworkInfo, SUPPORTED_CHAINS } from '../contexts/Web3Context';
 import { Election, electionService } from '../utils/database';
 import CreateElectionModal from './CreateElectionModal';
 import JoinElectionModal from './JoinElectionModal';
@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 const Dashboard: React.FC = () => {
   const { isDark } = useTheme();
-  const { isConnected } = useWeb3();
+  const { isConnected, chainId, switchToSepolia, switchToBotChain } = useWeb3();
   const [elections, setElections] = useState<Election[]>([]);
   const [filteredElections, setFilteredElections] = useState<Election[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,9 +20,11 @@ const Dashboard: React.FC = () => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const networkInfo = getNetworkInfo(chainId);
+
   useEffect(() => {
     loadElections();
-  }, []);
+  }, [chainId]); // Reload when user switches chain
 
   useEffect(() => {
     applyFilters();
@@ -30,7 +32,15 @@ const Dashboard: React.FC = () => {
 
   const loadElections = async () => {
     try {
-      const data = await electionService.getElections();
+      setLoading(true);
+      let data: Election[];
+      if (chainId && SUPPORTED_CHAINS[chainId]) {
+        // Show only elections deployed on the user's current network
+        data = await electionService.getElectionsByChain(chainId);
+      } else {
+        // Unsupported chain — show all as fallback (user will see the warning banner)
+        data = await electionService.getElections();
+      }
       setElections(data);
     } catch (error) {
       console.error('Error loading elections:', error);
@@ -39,6 +49,7 @@ const Dashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   const applyFilters = () => {
     let filtered = elections;
@@ -140,6 +151,54 @@ const Dashboard: React.FC = () => {
           Create, join, and participate in decentralized elections
         </p>
       </motion.div>
+
+      {/* Network Banner */}
+      {networkInfo ? (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-center gap-2"
+        >
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+            chainId === 677
+              ? isDark
+                ? 'bg-emerald-900/40 border-emerald-700 text-emerald-300'
+                : 'bg-emerald-50 border-emerald-300 text-emerald-700'
+              : isDark
+                ? 'bg-blue-900/40 border-blue-700 text-blue-300'
+                : 'bg-blue-50 border-blue-300 text-blue-700'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${chainId === 677 ? 'bg-emerald-400' : 'bg-blue-400'}`} />
+            {networkInfo.name}
+          </span>
+        </motion.div>
+      ) : chainId !== null && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`p-4 rounded-xl border text-center ${
+            isDark ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-300'
+          }`}
+        >
+          <p className={`text-sm font-medium mb-2 ${isDark ? 'text-yellow-300' : 'text-yellow-800'}`}>
+            ⚠️ Unsupported network (Chain ID: {chainId}). Switch to a supported network:
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={switchToSepolia}
+              className="px-4 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            >
+              Sepolia Testnet
+            </button>
+            <button
+              onClick={switchToBotChain}
+              className="px-4 py-1.5 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+            >
+              BOT Chain (677)
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

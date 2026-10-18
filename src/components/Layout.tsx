@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
-import { useWeb3 } from '../contexts/Web3Context';
+import { useWeb3, SUPPORTED_CHAINS, getNetworkInfo } from '../contexts/Web3Context';
 import { Moon, Sun, Wallet, Power, Vote } from 'lucide-react';
 
 interface LayoutProps {
@@ -47,15 +47,39 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </motion.div>
 
             <div className="flex items-center gap-4">
-              {chainId && chainId !== 11155111 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium"
-                >
-                  ⚠️ Switch to Sepolia
-                </motion.div>
-              )}
+              {chainId && (() => {
+                const networkInfo = getNetworkInfo(chainId);
+                if (networkInfo) {
+                  // Supported chain — show a branded network pill
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                        chainId === 677
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                        chainId === 677 ? 'bg-emerald-500' : 'bg-blue-500'
+                      }`} />
+                      {networkInfo.name}
+                    </motion.div>
+                  );
+                } else {
+                  // Unknown / unsupported chain — show warning
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-semibold"
+                    >
+                      ⚠️ Unsupported network
+                    </motion.div>
+                  );
+                }
+              })()}
 
               {isConnected ? (
                 <motion.div

@@ -10,6 +10,8 @@ export interface Election {
   endTime: number;
   createdAt: number;
   active: boolean;
+  chainId: number;          // Network chain ID (e.g. 11155111 = Sepolia, 677 = BOT Chain)
+  revealDeadline?: number;  // endTime + 24 hours (86400 seconds)
 }
 
 export interface CandidateRequest {
@@ -38,10 +40,24 @@ export class VotingDatabase extends Dexie {
 
   constructor() {
     super('VotingDatabase');
+    // Version 2: original schema (Sepolia only, no chainId)
     this.version(2).stores({
       elections: '++id, contractAddress, deployedBy, startTime, endTime, active, createdAt',
       candidateRequests: '++id, electionAddress, walletAddress, status, createdAt',
       voterRequests: '++id, electionAddress, walletAddress, status, createdAt'
+    });
+    // Version 3: added chainId index for multi-network support
+    this.version(3).stores({
+      elections: '++id, contractAddress, deployedBy, startTime, endTime, active, createdAt, chainId',
+      candidateRequests: '++id, electionAddress, walletAddress, status, createdAt',
+      voterRequests: '++id, electionAddress, walletAddress, status, createdAt'
+    }).upgrade(tx => {
+      // Migrate existing elections without chainId to Sepolia (11155111)
+      return tx.table('elections').toCollection().modify((election: any) => {
+        if (election.chainId === undefined) {
+          election.chainId = 11155111;
+        }
+      });
     });
   }
 }
@@ -56,6 +72,10 @@ export const electionService = {
 
   async getElections() {
     return await db.elections.orderBy('createdAt').reverse().toArray();
+  },
+
+  async getElectionsByChain(chainId: number) {
+    return await db.elections.where('chainId').equals(chainId).reverse().sortBy('createdAt');
   },
 
   async getElectionByAddress(contractAddress: string) {

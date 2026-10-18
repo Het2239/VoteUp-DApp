@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Users, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { getNetworkInfo } from '../contexts/Web3Context';
 import { useNavigate } from 'react-router-dom';
 import { Election } from '../utils/database';
 
@@ -71,6 +72,7 @@ const ElectionCard: React.FC<ElectionCardProps> = ({ election }) => {
   const phase = getPhase();
   const statusColor = getStatusColor(phase);
   const timeRemaining = getTimeRemaining();
+  const networkInfo = getNetworkInfo(election.chainId ?? 11155111);
 
   return (
     <motion.div
@@ -98,6 +100,17 @@ const ElectionCard: React.FC<ElectionCardProps> = ({ election }) => {
           >
             {election.description}
           </p>
+          {/* Network badge */}
+          {networkInfo && (
+            <span className={`inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
+              election.chainId === 677
+                ? isDark ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-50 text-emerald-700'
+                : isDark ? 'bg-blue-900/40 text-blue-300' : 'bg-blue-50 text-blue-700'
+            }`}>
+              <span className={`w-1 h-1 rounded-full ${election.chainId === 677 ? 'bg-emerald-400' : 'bg-blue-400'}`} />
+              {networkInfo.name}
+            </span>
+          )}
         </div>
         <div
           className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
