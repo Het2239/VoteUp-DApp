@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Filter, Clock, Users, Trophy, Calendar, Network } from 'lucide-react';
+import { Plus, Search, Filter, Clock, Users, Trophy, Calendar, Network, ExternalLink } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useWeb3, getNetworkInfo, SUPPORTED_CHAINS } from '../contexts/Web3Context';
 import { Election, electionService } from '../utils/database';
 import CreateElectionModal from './CreateElectionModal';
 import JoinElectionModal from './JoinElectionModal';
 import ElectionCard from './ElectionCard';
+import { BOT_CHAIN_LINKS } from './Layout';
 import toast from 'react-hot-toast';
 
 const Dashboard: React.FC = () => {
@@ -127,6 +128,26 @@ const Dashboard: React.FC = () => {
           <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             Please connect your wallet to access the voting dashboard
           </p>
+
+          <div className={`mt-6 pt-6 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+            <p className={`text-sm font-semibold mb-3 ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`}>
+              Built on BOT Chain
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {BOT_CHAIN_LINKS.map(link => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                >
+                  {link.label}
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
     );

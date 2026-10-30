@@ -55,7 +55,7 @@ export const SUPPORTED_CHAINS: Record<number, {
   677: {
     name: 'BOT Chain Mainnet',
     rpcUrl: 'https://rpc.botchain.ai',
-    explorerUrl: 'https://explorer.botchain.ai/',
+    explorerUrl: 'https://scan.botchain.ai/',
     nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
   },
 };

@@ -2,7 +2,13 @@ import React, { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../contexts/ThemeContext';
 import { useWeb3, SUPPORTED_CHAINS, getNetworkInfo } from '../contexts/Web3Context';
-import { Moon, Sun, Wallet, Power, Vote } from 'lucide-react';
+import { Moon, Sun, Wallet, Power, Vote, ExternalLink } from 'lucide-react';
+
+// Public BOT Chain links — shown on every page, with or without a connected wallet
+export const BOT_CHAIN_LINKS = [
+  { label: 'botchain.ai', href: 'https://botchain.ai/' },
+  { label: 'scan.botchain.ai', href: 'https://scan.botchain.ai/' },
+];
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { account, isConnected, connectWallet, disconnectWallet, chainId } = useWeb3();
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
       isDark 
         ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900' 
         : 'bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'
@@ -44,6 +50,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               } bg-clip-text text-transparent`}>
                 VoteUp
               </h1>
+              <a
+                href="https://botchain.ai/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                  isDark
+                    ? 'bg-emerald-900/40 border-emerald-700 text-emerald-300 hover:bg-emerald-900/70'
+                    : 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                on BOT Chain
+              </a>
             </motion.div>
 
             <div className="flex items-center gap-4">
@@ -137,9 +156,40 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         {children}
       </main>
+
+      <footer className={`border-t transition-colors duration-300 ${
+        isDark
+          ? 'bg-gray-900/50 border-gray-700'
+          : 'bg-white/50 border-gray-200'
+      }`}>
+        <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+          <span className={`flex items-center gap-2 font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            Powered by BOT Chain
+          </span>
+          <div className="flex items-center gap-4">
+            {BOT_CHAIN_LINKS.map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-1 font-medium transition-colors ${
+                  isDark
+                    ? 'text-emerald-400 hover:text-emerald-300'
+                    : 'text-emerald-700 hover:text-emerald-800'
+                }`}
+              >
+                {link.label}
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
