@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Calendar, Clock, Trophy, UserCheck, UserPlus, Vote, Settings } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, Clock, Trophy, UserCheck, UserPlus, Vote, Settings, Wallet } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useWeb3 } from '../contexts/Web3Context';
 import { getVotingContract, getElectionInfo, getCandidates, getVoterStatus, getCandidateStatus } from '../utils/contract';
@@ -18,7 +18,7 @@ const ElectionDetails: React.FC = () => {
   const { contractAddress } = useParams<{ contractAddress: string }>();
   const navigate = useNavigate();
   const { isDark } = useTheme();
-  const { provider, signer, account, isConnected } = useWeb3();
+  const { provider, signer, account, isConnected, connectWallet } = useWeb3();
 
   const [election, setElection] = useState<any>(null);
   const [candidates, setCandidates] = useState<any[]>([]);
@@ -122,6 +122,50 @@ const ElectionDetails: React.FC = () => {
     setShowApplyModal(false);
     loadElectionData(); // Refresh data
   };
+
+  // Election data is read through the wallet provider, so without a wallet the page would spin forever
+  if (!isConnected || !provider) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`max-w-md text-center p-8 rounded-2xl ${isDark ? 'bg-gray-800/50 border border-gray-700' : 'bg-white/50 border border-gray-200'
+            }`}
+        >
+          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${isDark
+            ? 'bg-gradient-to-r from-purple-600 to-cyan-600'
+            : 'bg-gradient-to-r from-purple-500 to-cyan-500'
+            }`}>
+            <Wallet className="w-8 h-8 text-white" />
+          </div>
+          <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Connect Your Wallet
+          </h2>
+          <p className={`mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Please connect your wallet to see this election's details, candidates and results.
+          </p>
+          {contractAddress && (
+            <p className={`mb-6 text-xs font-mono break-all text-gray-500`}>
+              {contractAddress}
+            </p>
+          )}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={connectWallet}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow"
+          >
+            <Wallet className="w-4 h-4" />
+            Connect Wallet
+          </motion.button>
+          <p className={`mt-4 text-xs text-gray-500`}>
+            Make sure your wallet is on BOT Chain Mainnet (chain ID 677).
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
